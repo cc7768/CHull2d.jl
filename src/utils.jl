@@ -134,16 +134,20 @@ end
 
 # Matrix times point
 function _unsafe_mult_2by2_point{T}(A::Matrix{T}, x::Point{2, T})
-    out = [A[1, 1]*x[1] + A[1, 2]*x[2], A[2, 1]*x[1] + A[2, 2]*x[2]]
+    x1 = x[1]
+    x2 = x[2]
+    out = (A[1, 1]*x1 + A[1, 2]*x2, A[2, 1]*x1 + A[2, 2]*x2)
     return out
 end
 
 function _unsafe_mult_Nby2_point{T}(A::Matrix{T}, x::Point{2, T})
     nr, nc = size(A)
+    x1 = x[1]
+    x2 = x[2]
 
     out = Vector(T, nr)
     for i=1:nr
-        out[i] = A[i, 1]*x[1]+A[i, 2]*x[2]
+        out[i] = A[i, 1]*x1+A[i, 2]*x2
     end
     return out
 end

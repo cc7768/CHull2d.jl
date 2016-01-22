@@ -1,5 +1,7 @@
-using Benchmark
+using Benchmarks
 using FixedSizeArrays
+
+import Base: *, isless, isequal
 
 include("utils.jl");
 include("algorithms.jl");
@@ -30,6 +32,8 @@ function monotonechain_wat(p::Vector{Point{2, Float64}})
     return ep
 end
 
+p = [Point(randn(), randn()) for i=1:2500000]
+
 srand(1112016)
 npoints = [25, 250, 2500, 25000, 250000, 2500000]
 nreps = [1000, 500, 100, 50, 25, 5]
@@ -50,4 +54,3 @@ for i=1:length(npoints)
     println("With $np points")
     println(compare([gsv, gsat, mcv, mcat], nr))
 end
-

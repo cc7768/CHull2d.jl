@@ -94,7 +94,7 @@ function _grahamscan{T<:Real}(p::Vector{Point{2, T}})
 
     # Create function to sort by angles
     lt(a, b) = xmin == a ? true : xmin == b ? false : ccw(xmin, a, b)
-    psort = sort(p, lt=lt)
+    psort = sort!(p, lt=lt)
 
     # Add the starting point at end so we go full circle
     push!(psort, xmin)
@@ -111,7 +111,7 @@ end
 function _monotonechain{T<:Real}(p::Vector{Point{2, T}})
 
     # Sort points
-    psort = sort(p)
+    psort = sort!(p)
 
     # Split into upper and lower
     xl, xu = split_xL_xU(psort)

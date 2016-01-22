@@ -10,7 +10,7 @@ Quickhull
 #=
 Akl Toussaint algorithm
 =#
-function _akltoussaint{T<:Real}(p::Vector{Point{T}})
+function _akltoussaint{T<:Real}(p::Vector{Point{2, T}})
 
     # Get number of points
     npts = length(p)
@@ -37,7 +37,7 @@ function _akltoussaint{T<:Real}(p::Vector{Point{T}})
     return out
 end
 
-function _akltoussaint4{T<:Real}(p::Vector{Point{T}}, upts::Vector{Point{T}}, npts::Int64)
+function _akltoussaint4{T<:Real}(p::Vector{Point{2, T}}, upts::Vector{Point{2, T}}, npts::Int64)
 
     # Get the points from upts
     pt1, pt2, pt3, pt4 = upts
@@ -52,8 +52,8 @@ function _akltoussaint4{T<:Real}(p::Vector{Point{T}}, upts::Vector{Point{T}}, np
     @inbounds for n=1:npts
         temp = (p[n] - pt3)
 
-        λ1_1, λ2_1 = _unsafe_mult_2by2(tinv_1, temp)
-        λ1_2, λ2_2 = _unsafe_mult_2by2(tinv_2, temp)
+        λ1_1, λ2_1 = _unsafe_mult_2by2_point(tinv_1, temp)
+        λ1_2, λ2_2 = _unsafe_mult_2by2_point(tinv_2, temp)
 
         out[n] = check_λ(λ1_1, λ2_1) * check_λ(λ1_2, λ2_2)
     end
@@ -61,7 +61,7 @@ function _akltoussaint4{T<:Real}(p::Vector{Point{T}}, upts::Vector{Point{T}}, np
     return p[out]
 end
 
-function _akltoussaint3{T<:Real}(p::Vector{Point{T}}, upts::Vector{Point{T}}, npts::Int64)
+function _akltoussaint3{T<:Real}(p::Vector{Point{2, T}}, upts::Vector{Point{2, T}}, npts::Int64)
 
     # Get the points from upts
     pt1, pt2, pt3 = upts
@@ -75,7 +75,7 @@ function _akltoussaint3{T<:Real}(p::Vector{Point{T}}, upts::Vector{Point{T}}, np
     @inbounds for n=1:npts
         temp = (p[n] - pt3)
 
-        λ1, λ2 = tinv*temp
+        λ1, λ2 = _unsafe_mult_2by2_point(tinv, temp)
 
         out[n] = check_λ(λ1, λ2)
     end
@@ -86,17 +86,18 @@ end
 #
 # Graham Scan Algorithm
 #
-function _grahamscan{T<:Real}(p::Vector{Point{T}})
+function _grahamscan{T<:Real}(p::Vector{Point{2, T}})
 
     # Get yminind
-    ymin, yminind = miny(p)
+    xminind = indmin(p)
+    xmin = p[xminind]
 
     # Create function to sort by angles
-    lt(a, b) = ymin == a ? true : ymin == b ? false : ccw(ymin, a, b)
+    lt(a, b) = xmin == a ? true : xmin == b ? false : ccw(xmin, a, b)
     psort = sort(p, lt=lt)
 
     # Add the starting point at end so we go full circle
-    push!(psort, ymin)
+    push!(psort, xmin)
 
     # Call function that works around points
     ep = wrappoints(psort)
@@ -107,7 +108,7 @@ end
 #
 # Monotone Chain
 #
-function _monotonechain{T<:Real}(p::Vector{Point{T}})
+function _monotonechain{T<:Real}(p::Vector{Point{2, T}})
 
     # Sort points
     psort = sort(p)
@@ -121,11 +122,11 @@ function _monotonechain{T<:Real}(p::Vector{Point{T}})
     return [lh[1:end-1]; uh[1:end-1]]
 end
 
-function _quickhull{T<:Real}(p::Vector{Point{T}})
+# function _quickhull{T<:Real}(p::Vector{Point{2, T}})
 
-    # Note: I suspect this algorithm can be implemented recursively
-    #       by calling it on two points, separating them into two
-    #       sets and then calling it on the endpoints of those
-    #       sets. Think carefully about how to implement this the
-    #       right way.
-end
+#     # Note: I suspect this algorithm can be implemented recursively
+#     #       by calling it on two points, separating them into two
+#     #       sets and then calling it on the endpoints of those
+#     #       sets. Think carefully about how to implement this the
+#     #       right way.
+# end

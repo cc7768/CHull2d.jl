@@ -6,24 +6,24 @@ Currently included are:
 
 * Graham Scan Algorithm
 * Monotone Chain Algorithm
-* Quickhull Algorithm
 
 Algorithms that should be added are:
 
-* Chan
+* Quickhull Algorithm
+* Chan Algorithm
 * ?
 =#
 
-# It turns out to be useful to have our own
-# point type so that we can iterate in 1
-# dimension over points.
-include("point.jl")
+# Load dependencies
+using FixedSizeArrays
 
+# Base methods
+import Base: *, isless, isequal
 
 # Create a type to hold convex hulls
 immutable ConvexHull{T<:Real}
-    points::Vector{Point{T}}
-    extremepoints::Vector{Point{T}}
+    points::Vector{Point{2, T}}
+    extremepoints::Vector{Point{2, T}}
 end
 
 #
@@ -35,11 +35,19 @@ include("utils.jl")
 const ALGDICT = Dict{Symbol, Function}()
 ALGDICT[:MonotoneChain] = _monotonechain
 ALGDICT[:GrahamScan] = _grahamscan
-ALGDICT[:QuickHull] = _quickhull
+# ALGDICT[:QuickHull] = _quickhull
 
-function ConvexHull(points::Vector{Point}, algorithm=:MonotoneChain)
+"""
+Creates the convex hull of a set of points
+
+* points : The set of points that you would like to take the convex hull of
+* algorithm : Which convex hull algorithm to use. Currently implemented are
+              [:GrahamScan, :MonotoneChain]
+* _at : Whether or not to use the Akl Toussaint pruning
+"""
+function ConvexHull(points::Vector{Point}, algorithm=:MonotoneChain, _at=true)
     # First prune points
-    p = _akltoussaint(points)
+    p = _at ? _akltoussaint(points) : points
 
     # Apply algorithm
     ep = ALGDICT[algorithm](p)

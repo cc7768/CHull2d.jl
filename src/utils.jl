@@ -1,10 +1,6 @@
 #
 # General utils
 #
-@inline orientation(a::Point, b::Point, c::Point) =
-    (b.x-a.x)*(c.y-a.y) - (b.y-a.y)*(c.x-a.x)
-cw(a, b, c) = orientation(a, b, c) < 0.0 ? true : false
-ccw(a, b, c) = orientation(a, b, c) >= 0.0 ? true : false
 
 #
 # Utils for Akl Toussaint
@@ -14,7 +10,7 @@ Creates the "T inverse" matrix described by wikipedia and
 above that will right multiply points to get the Barycentric
 coordinates
 """
-function create_t_inv(a::Point, b::Point, c::Point)
+function create_t_inv(a::Point{2}, b::Point{2}, c::Point{2})
     # Pull out points
     a1, a2 = a
     b1, b2 = b
@@ -32,7 +28,7 @@ end
 Determines which points in a vector of points lie inside or outside the
 triangle determined by the triangle abc.
 """
-function pt_out_tri{T}(x::Vector{Point{T}}, a::Point, b::Point, c::Point)
+function pt_out_tri{T}(x::Vector{Point{2, T}}, a::Point{2}, b::Point{2}, c::Point{2})
     # Get number of points in x
     npts = length(x)
 
@@ -63,7 +59,7 @@ Takes a vector of points (which must be sorted either by
 relative  or x-value) and wraps around them by assuring
 that they only make counter-clockwise turns.
 """
-function wrappoints{T<:Real}(p::Vector{Point{T}})
+function wrappoints{T<:Real}(p::Vector{Point{2, T}})
 
     # Get number of points
     npts = length(p)
@@ -95,7 +91,7 @@ end
 #
 # Utils for Monotone Chain
 #
-function split_xL_xU{T<:Real}(psort::Vector{Point{T}})
+function split_xL_xU{T<:Real}(psort::Vector{Point{2, T}})
     # Allocate space to identify where points belong
     # We make endpoints true because we want them in both sets
     npts = length(psort)
@@ -106,14 +102,14 @@ function split_xL_xU{T<:Real}(psort::Vector{Point{T}})
 
     # Get the endpoints and slope
     pmin = psort[1]; pmax = psort[end]
-    xmin = pmin.x; ymin = pmin.y
-    slope = (pmax.y - pmin.y)/(pmax.x - pmin.x)
+    xmin = pmin[1]; ymin = pmin[2]
+    slope = (pmax[2] - pmin[2])/(pmax[1] - pmin[1])
 
     # Iterate through all points except endpoints
     @inbounds for i=2:npts-1
         # Pull out x and y values for ith point
         p_i = psort[i]
-        xi, yi = p_i.x, p_i.y
+        xi, yi = p_i[1], p_i[2]
 
         # Compute where y on line would be
         yi_line = ymin +  slope*(xi - xmin)
@@ -132,3 +128,82 @@ function split_xL_xU{T<:Real}(psort::Vector{Point{T}})
     return xL, xU
 end
 
+#
+# Additional functions for Point{2, T} that will be useful
+#
+
+# Matrix times point
+function _unsafe_mult_2by2_point{T}(A::Matrix{T}, x::Point{2, T})
+    out = [A[1, 1]*x[1] + A[1, 2]*x[2], A[2, 1]*x[1] + A[2, 2]*x[2]]
+    return out
+end
+
+function _unsafe_mult_Nby2_point{T}(A::Matrix{T}, x::Point{2, T})
+    nr, nc = size(A)
+
+    out = Vector(T, nr)
+    for i=1:nr
+        out[i] = A[i, 1]*x[1]+A[i, 2]*x[2]
+    end
+    return out
+end
+
+function *(A::Matrix, x::Point{2})
+    nr, nc = size(A)
+
+    # Depending on size call the right function
+    if (nc==nr==2)
+        out = _unsafe_mult_2by2_point(A, x)
+    elseif (nc==2)
+        out = _unsafe_mult_nby2(A, x)
+    else
+        error("Size is wrong. Number of cols should be 2 (currently is $nc)")
+    end
+
+    return out
+end
+
+function extremax{T}(p::Array{Point{2, T}})
+    # Get number of points
+    npts = length(p)
+
+    # Set initial values
+    minval, minind = Inf, 0
+    maxval, maxind = -Inf, 0
+
+    for i=1:npts
+        cx, cy = p[i]
+        minval, minind = cx < minval ? (cx, i) : (minval, minind)
+        maxval, maxind = cx > maxval ? (cx, i) : (maxval, maxind)
+    end
+
+    return minval, minind, maxval, maxind
+end
+
+function extremay{T}(p::Array{Point{2, T}})
+    # Get number of points
+    npts = length(p)
+
+    # Set initial values
+    minval, minind = Inf, 0
+    maxval, maxind = -Inf, 0
+
+    for i=1:npts
+        cx, cy = p[i]
+        minval, minind = cy < minval ? (cy, i) : (minval, minind)
+        maxval, maxind = cy > maxval ? (cy, i) : (maxval, maxind)
+    end
+
+    return minval, minind, maxval, maxind
+end
+
+
+# Comparisons
+isless{T}(x::Point{2, T}, y::Point{2, T}) = x[1] < y[1] ? true : (x[1]==y[1] && x[2]<y[2]) ? true : false
+isequal{T}(x::Point{2, T}, y::Point{2, T}) = (x[1]==y[1]) && (x[2]==y[2]) ? true : false
+
+# Orientation
+@inline orientation(a::Point{2}, b::Point{2}, c::Point{2}) =
+    (b[1]-a[1])*(c[2]-a[2]) - (b[2]-a[2])*(c[1]-a[1])
+cw(a::Point{2}, b::Point{2}, c::Point{2}) = orientation(a, b, c) < 0.0 ? true : false
+ccw(a::Point{2}, b::Point{2}, c::Point{2}) = orientation(a, b, c) >= 0.0 ? true : false

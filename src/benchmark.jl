@@ -1,29 +1,29 @@
 using Benchmark
+using FixedSizeArrays
 
-include("point.jl");
 include("utils.jl");
 include("algorithms.jl");
 
-function graham_scan_vanilla(p::Vector{Point{Float64}})
+function graham_scan_vanilla(p::Vector{Point{2, Float64}})
     ep = _grahamscan(p)
 
     return ep
 end
 
-function graham_scan_wat(p::Vector{Point{Float64}})
+function graham_scan_wat(p::Vector{Point{2, Float64}})
     p = _akltoussaint(p)
     ep = _grahamscan(p)
 
     return ep
 end
 
-function monotonechain_vanilla(p::Vector{Point{Float64}})
+function monotonechain_vanilla(p::Vector{Point{2, Float64}})
     ep = _monotonechain(p)
 
     return ep
 end
 
-function monotonechain_wat(p::Vector{Point{Float64}})
+function monotonechain_wat(p::Vector{Point{2, Float64}})
     p = _akltoussaint(p)
     ep = _monotonechain(p)
 

@@ -167,7 +167,7 @@ function *(A::Matrix, x::Point{2})
     return out
 end
 
-function extremax{T}(p::Array{Point{2, T}})
+function extremax{T}(p::Vector{Point{2, T}})
     # Get number of points
     npts = length(p)
 
@@ -184,7 +184,7 @@ function extremax{T}(p::Array{Point{2, T}})
     return minval, minind, maxval, maxind
 end
 
-function extremay{T}(p::Array{Point{2, T}})
+function extremay{T}(p::Vector{Point{2, T}})
     # Get number of points
     npts = length(p)
 

@@ -10,7 +10,7 @@ Quickhull
 #=
 Akl Toussaint algorithm
 =#
-function _akltoussaint{T<:Real}(p::Vector{Point{2, T}})
+function _akltoussaint{T}(p::Vector{Point{2, T}})
 
     # Get number of points
     npts = length(p)

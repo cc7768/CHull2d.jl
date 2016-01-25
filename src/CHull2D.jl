@@ -18,13 +18,10 @@ Algorithms that should be added are:
 using FixedSizeArrays
 
 # Base methods
-import Base: *, isless, isequal
+import Base: *, isless, isequal, intersect
 
-# Create a type to hold convex hulls
-immutable ConvexHull{T<:Real}
-    points::Vector{Point{2, T}}
-    extremepoints::Vector{Point{2, T}}
-end
+# Include file of all types
+include("CHullTypes.jl")
 
 #
 # Include all algorithms
@@ -47,10 +44,10 @@ Creates the convex hull of a set of points
 """
 function ConvexHull(points::Vector{Point}, algorithm=:MonotoneChain, _at=true)
     # First prune points
-    p = _at ? _akltoussaint(points) : points
+    points = _at ? _akltoussaint(points) : points
 
     # Apply algorithm
     ep = ALGDICT[algorithm](p)
 
-    return ConvexHull(points, ep)
+    return ConvexHull(ep)
 end

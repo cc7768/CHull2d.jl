@@ -1,13 +1,32 @@
 #
 # Convex Hull
 #
-immutable ConvexHull{T<:Real}
+immutable ConvexHull{T}
     extremepoints::Vector{Point{2, T}}
+
+    # TODO: Add inner constructor
 end
 
-function intersect(ch1::ConvexHull, ch2::ConvexHull)
-    error("Intersection between convex sets is not currently implemented")
+length(ch::ConvexHull) = length(ch.extremepoints)
+isequal(ch1::ConvexHull, ch2::ConvexHull) = ch1.extremepoints == ch2.extremepoints
+
+#
+# Interval
+#
+immutable Interval
+    lb
+    ub
+
+    function Interval(lb, ub)
+        if lb<ub
+            return new(lb, ub)
+        else
+            return new(ub, lb)
+        end
+    end
 end
+
+in(x, i::Interval) = (i.lb <= x <= i.ub) ? true : false
 
 #
 # Line Segment
@@ -29,10 +48,10 @@ function LineSegment(p1, p2)
 
     slope = (y2 - y1)/(x2 - x1)
 
-    return Line(p1, p2, slope)
+    return LineSegment(p1, p2, slope)
 end
 
-function evaluatey(x::T, l::LineSegment)
+function evaluatey(x::Float64, l::LineSegment)
     x1 = l.p1[1]
     x2 = l.p2[1]
 
@@ -45,7 +64,7 @@ function evaluatey(x::T, l::LineSegment)
     return y
 end
 
-function evaluatex(y::T, l::LineSegment)
+function evaluatex(y::Float64, l::LineSegment)
     y1 = l.p1[2]
     y2 = l.p2[2]
 
@@ -58,52 +77,21 @@ function evaluatex(y::T, l::LineSegment)
     return x
 end
 
-function intersect(l1::LineSegment, l2::LineSegment)
-    if l1.slope == l2.slope
-        warn("Same slope -- Do not intersect")
-        status = -1
-        intersection = Point(Inf, Inf)
-        out = (status, intersection)
-    end
-    # Pull out points
-    x1 = l1.p1[1]
-    y1 = l1.p1[2]
-    x2 = l2.p1[1]
-    y2 = l2.p1[2]
-    x3 = l1.p1[1]
-    y3 = l1.p1[2]
-    x4 = l2.p2[1]
-    y4 = l2.p2[2]
-
-    # Get intersection
-    denom = (x1-x2)*(y3-y4) - (y1-y2)*(x3-x4)
-    x_intersect = (x1*y2 - y1*x2)*(x3-x4) - (x1-x2)*(x3*y4 - y3*x4)/denom
-    y_intersect = (x1*y2 - y1*x2)*(y3-y4) - (y1-y2)*(x3*y4 - y3*x4)/denom
-    intersection = Point(x_intersect, y_intersect)
-
-    # Check if intersection is on both intervals
-    if (x1 < x_intersect < x2) && (x3 < x_intersect < x4)
-        out = (1, intersection)
-    # If not, return intersection but negative status
-    else
-        warn("Does not intersect on segment")
-        out = (-2, intersection)
-    end
-
-    return out
-end
-
+#
+# Quadrant
+#
 immutable Quadrant{T}
     # The origin of quadrant (x, y)
     origin::Point{2, T}
 
-    # The end point in x and y directions
-    _end_x::T
-    _end_y::T
+    # The end point in x and y directions (should be Inf or -Inf)
+    lx::LineSegment
+    ly::LineSegment
 
-    # The lines that make up quadrant
-    _line_x = LineSegment{T}
-    _line_y = LineSegment{T}
+    # Functions which say whether points are in correct piece of quadrant
+    dir_x::Function
+    dir_y::Function
+
 end
 
 function Quadrant(origin::Point, _end_x, _end_y)
@@ -111,19 +99,27 @@ function Quadrant(origin::Point, _end_x, _end_y)
     x = origin[1]
     y = origin[2]
 
-    # Create lines
-    _line_x = Line(origin, Point(_end_x, y))
-    _line_y = Line(origin, Point(x, _end_y))
+    # If end is positive infinity then want to check right of origin
+    # TODO: Come back and allow this to be Inf -- The intersection
+    # method for line segments can't handle this currently
+    if _end_x == Inf
+        dir_x(p) = p[1] >= x
+        lx = LineSegment(origin, Point(1e12, y))
+    elseif _end_x == -Inf
+        dir_x(p) = p[1] <= x
+        lx = LineSegment(Point(-1e12, y), origin)
+    end
 
-    return Quadrant(origin, _end_x, _end_y, _line_x, _line_y)
+    # If end is positive infinity then want to check above origin
+    if _end_y == Inf
+        dir_y(p) = p[2] >= y
+        ly = LineSegment(origin, Point(x, Inf))
+    elseif _end_y == -Inf
+        dir_y(p) = p[2] <= y
+        ly = LineSegment(Point(x, -Inf), origin)
+    end
+
+    return Quadrant(origin, lx, ly, dir_x, dir_y)
 end
 
-function intersect(q1::Quadrant, q2::Quadrant)
-    # Pull out points
-    o1_x = q1.origin[1]
-    o1_y = q1.origin[2]
-    o2_x = q2.origin[1]
-    o2_y = q2.origin[2]
-
-    return nothing
-end
+in(x::Point, q::Quadrant) = (q.dir_x(x) && q.dir_y(x)) ? true : false

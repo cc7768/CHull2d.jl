@@ -13,21 +13,23 @@ Algorithms that should be added are:
 * Chan Algorithm
 * ?
 =#
+module CHull2D
 
 # Load dependencies
 using FixedSizeArrays
 
 # Base methods
-import Base: *, isless, isequal, intersect
+import Base: *, in, isless, isequal, intersect, length
 
 # Include file of all types
 include("CHullTypes.jl")
+include("utils.jl")
 
 #
 # Include all algorithms
 #
+include("intersect.jl")
 include("algorithms.jl")
-include("utils.jl")
 
 const ALGDICT = Dict{Symbol, Function}()
 ALGDICT[:MonotoneChain] = _monotonechain
@@ -42,12 +44,16 @@ Creates the convex hull of a set of points
               [:GrahamScan, :MonotoneChain]
 * _at : Whether or not to use the Akl Toussaint pruning
 """
-function ConvexHull(points::Vector{Point}, algorithm=:MonotoneChain, _at=true)
+function convexhull{T}(points::Vector{Point{2, T}}; algorithm::Symbol=:MonotoneChain, _at::Bool=true)
     # First prune points
     points = _at ? _akltoussaint(points) : points
 
     # Apply algorithm
-    ep = ALGDICT[algorithm](p)
+    ep = ALGDICT[algorithm](points)
 
     return ConvexHull(ep)
+end
+
+export ConvexHull, LineSegment, Quadrant, Point
+
 end

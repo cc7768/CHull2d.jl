@@ -1,13 +1,22 @@
 # Intersection methods
 # TODO: Change intersection methods -- This breaks with infinite slope
 function intersect(l1::LineSegment, l2::LineSegment)
-
-    if l1.slope == l2.slope
-        warn("Same slope -- Do not intersect")
-        intersection = Point(Inf, Inf)
-        out = (false, intersection)
+    # Check for all cases in which they don't intersect
+    # Will check for: 1) Whether l1.p1 and l1.p2 are on opposite sides of
+    # l2.p1->l2.p2 2) Whether l2.p1 and l2.p2 are on opposite sides of
+    # l1.p1->l2.p2 3) Whether they have same slope
+    # See: http://jeffe.cs.illinois.edu/teaching/373/notes/x06-sweepline.pdf
+    p1, p2 = l1.p1, l1.p2
+    p3, p4 = l2.p1, l2.p2
+    if ccw(p1, p3, p4) == ccw(p2, p3, p4)
+        return (false, Point(Inf, Inf))
+    elseif ccw(p3, p1, p2) == ccw(p4, p1, p2)
+        return (false, Point(Inf, Inf))
+    elseif l1.slope == l2.slope
+        return (false, Point(Inf, Inf))
     end
 
+    # If we make it this far, then line segments should intersect
     # Pull out points
     x1 = l1.p1[1]
     y1 = l1.p1[2]
@@ -49,8 +58,10 @@ function intersect(ch::ConvexHull, q::Quadrant)
 
     # Get information about quadrant
     o = q.origin
-    lx = q.lx
-    ly = q.ly
+    lx = LineSegment(Point(clamp(q.lx.p1[1], xmin, xmax), clamp(q.lx.p1[2], ymin, ymax)),
+                     Point(clamp(q.lx.p2[1], xmin, xmax), clamp(q.lx.p2[2], ymin, ymax)))
+    ly = LineSegment(Point(clamp(q.ly.p1[1], xmin, xmax), clamp(lx.p1[2], ymin, ymax)),
+                     Point(clamp(q.ly.p2[1], xmin, xmax), clamp(lx.p2[2], ymin, ymax)))
 
     # Start a convex hull to store outpoints in
     prev_pt = ext_pts[end]

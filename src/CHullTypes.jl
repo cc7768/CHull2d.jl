@@ -37,7 +37,8 @@ immutable LineSegment{T}
     p2::Point{2, T}
 
     # Slope
-    slope::Float64
+    _slope::Float64
+    _norm::Float64
 end
 
 function LineSegment(p1, p2)
@@ -46,10 +47,13 @@ function LineSegment(p1, p2)
     x2 = p2[1]
     y2 = p2[2]
 
-    slope = (y2 - y1)/(x2 - x1)
+    _slope = (y2 - y1)/(x2 - x1)
+    _norm = sqrt((y2-y1)*(y2-y1) + (x2-x1)*(x2-x1))
 
-    return LineSegment(p1, p2, slope)
+    return LineSegment(p1, p2, _slope, _norm)
 end
+
+isfinite(l::LineSegment) = all((isfinite(l.p1[1]), isfinite(l.p1[2]), isfinite(l.p2[1]), isfinite(l.p2[2])))
 
 function evaluatey(x::Float64, l::LineSegment)
     x1 = l.p1[1]
@@ -76,6 +80,22 @@ function evaluatex(y::Float64, l::LineSegment)
 
     return x
 end
+
+# TODO: This isn't quite right. It returns distance 0 for points on same line
+# (but not in line segment)
+function distance(l::LineSegment, p::Point)
+    # Pull out points
+    x0, y0 = p[1], p[2]
+    x1, y1 = l.p1[1], l.p1[2]
+    x2, y2 = l.p2[1], l.p2[2]
+
+    # Compute numerator and denominator of Wikipedia expression
+    numerator = abs((y2-y1)*x0 - (x2-x1)*y0 + x2*y1 - y2*x1)
+    denominator = l._norm
+
+    return numerator/denominator
+end
+
 
 #
 # Quadrant

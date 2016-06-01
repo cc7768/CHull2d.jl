@@ -129,4 +129,7 @@ end
 #     #       sets and then calling it on the endpoints of those
 #     #       sets. Think carefully about how to implement this the
 #     #       right way.
+#     # Note: In a loop, at same time, check whether a point lies within the
+#     #       the set of points that should be removed and whether it is the
+#     #       furthest point from line.
 # end

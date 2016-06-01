@@ -19,7 +19,7 @@ module CHull2D
 using FixedSizeArrays
 
 # Base methods
-import Base: *, in, isless, isequal, intersect, length
+import Base: *, in, intersect, isfinite, isless, isequal, length
 
 # Include file of all types
 include("CHullTypes.jl")

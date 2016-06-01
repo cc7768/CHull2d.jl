@@ -201,6 +201,8 @@ function extremay{T}(p::Vector{Point{2, T}})
     return minval, minind, maxval, maxind
 end
 
+@inline distance{T}(a::Point{2, T}, b::Point{2, T}) = sqrt((b[1] - a[1])^2 - (b[2] - a[2])^2)
+
 
 # Comparisons
 isless{T}(x::Point{2, T}, y::Point{2, T}) = x[1] < y[1] ? true : (x[1]==y[1] && x[2]<y[2]) ? true : false

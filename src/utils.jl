@@ -17,8 +17,8 @@ function create_t_inv(a::Point{2}, b::Point{2}, c::Point{2})
     c1, c2 = c
 
     # Build t inverse matrix
-    temp = -a2* b1 + a1 *b2 + a2 *c1 - b2 *c1 - a1 *c2 + b1 *c2
-    return [(b2-c2)/temp (c1-b1)/temp; (c2-a1)/temp (a1-c1)/temp]
+    temp = (a1*b2 - a1*c2 - c1*b1) - (b1*a2 - b1*c1 - c1*a2)
+    return [(b2-c2)/temp (c2-a2)/temp; (c1-b1)/temp (a1-c1)/temp]
 end
 
 # One liner to check if λ values are in (0, 1) and sum to less than 1
@@ -211,3 +211,4 @@ isequal{T}(x::Point{2, T}, y::Point{2, T}) = (x[1]==y[1]) && (x[2]==y[2]) ? true
     (b[1]-a[1])*(c[2]-a[2]) - (b[2]-a[2])*(c[1]-a[1])
 cw(a::Point{2}, b::Point{2}, c::Point{2}) = orientation(a, b, c) < 0.0 ? true : false
 ccw(a::Point{2}, b::Point{2}, c::Point{2}) = orientation(a, b, c) >= 0.0 ? true : false
+

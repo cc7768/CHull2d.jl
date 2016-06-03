@@ -45,6 +45,7 @@ Creates the convex hull of a set of points
 * _at : Whether or not to use the Akl Toussaint pruning
 """
 function convexhull{T}(points::Vector{Point{2, T}}; algorithm::Symbol=:MonotoneChain, _at::Bool=true)
+    # TODO: Should make sure that there are at least 3 not co-linear points
     # First prune points
     points = _at ? _akltoussaint(points) : points
 
@@ -54,6 +55,9 @@ function convexhull{T}(points::Vector{Point{2, T}}; algorithm::Symbol=:MonotoneC
     return ConvexHull(ep)
 end
 
-export ConvexHull, LineSegment, Quadrant, Point
+export ConvexHull, LineSegment, Quadrant, Point, # Types
+       convexhull, wrappoints, pt_out_tri,
+       evaluatex, evaluatey, ccw, cw, orientation
 
 end
+

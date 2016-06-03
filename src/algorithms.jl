@@ -21,6 +21,8 @@ function _akltoussaint{T}(p::Vector{Point{2, T}})
     # Get min and max values for x and y
     xmin, xminind, xmax, xmaxind = extremax(p)
     ymin, yminind, ymax, ymaxind = extremay(p)
+
+    # Find unique set of points
     uptsind = unique([xminind, ymaxind, xmaxind, yminind])
     upts = p[uptsind]
     nu = length(uptsind)

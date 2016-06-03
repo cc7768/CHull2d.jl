@@ -17,8 +17,8 @@ function create_t_inv(a::Point{2}, b::Point{2}, c::Point{2})
     c1, c2 = c
 
     # Build t inverse matrix
-    temp = (a1*b2 - a1*c2 - c1*b1) - (b1*a2 - b1*c1 - c1*a2)
-    return [(b2-c2)/temp (c2-a2)/temp; (c1-b1)/temp (a1-c1)/temp]
+    temp = (a1*b2 - a1*c2 - c1*b2) - (b1*a2 - b1*c2 - c1*a2)
+    return [(b2-c2)/temp (c1-b1)/temp; (c2-a2)/temp (a1-c1)/temp]
 end
 
 # One liner to check if λ values are in (0, 1) and sum to less than 1
@@ -38,7 +38,7 @@ function pt_out_tri{T}(x::Vector{Point{2, T}}, a::Point{2}, b::Point{2}, c::Poin
     # Create our "T inverse" matrixs
     tinv = create_t_inv(a, b, c)
 
-    for n=1:npts
+    @inbounds for n=1:npts
         # Get the vector we need to multiply by T inverse to get
         # the Barycentric coordinates
         temp = x[n] - c
@@ -56,7 +56,7 @@ end
 #
 """
 Takes a vector of points (which must be sorted either by
-relative  or x-value) and wraps around them by assuring
+relative angle or x-value) and wraps around them by assuring
 that they only make counter-clockwise turns.
 """
 function wrappoints{T<:Real}(p::Vector{Point{2, T}})
@@ -102,9 +102,11 @@ function split_xL_xU{T<:Real}(psort::Vector{Point{2, T}})
 
     # Get the endpoints and slope
     pmin = psort[1]; pmax = psort[end]
-    xmin = pmin[1]; ymin = pmin[2]
-    slope = (pmax[2] - pmin[2])/(pmax[1] - pmin[1])
+    ls = LineSegment(pmin, pmax)
 
+    # We check whether it is above or below the line between
+    # the points, but could also check whether it was clockwise
+    # or counter-clockwise (above/below seems like less operations)
     # Iterate through all points except endpoints
     @inbounds for i=2:npts-1
         # Pull out x and y values for ith point
@@ -112,7 +114,7 @@ function split_xL_xU{T<:Real}(psort::Vector{Point{2, T}})
         xi, yi = p_i[1], p_i[2]
 
         # Compute where y on line would be
-        yi_line = ymin +  slope*(xi - xmin)
+        yi_line = evaluatey(ls, xi)
 
         if yi_line <= yi
             xL_bool[i] = false

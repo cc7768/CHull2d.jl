@@ -55,12 +55,12 @@ end
 
 isfinite(l::LineSegment) = all((isfinite(l.p1[1]), isfinite(l.p1[2]), isfinite(l.p2[1]), isfinite(l.p2[2])))
 
-function evaluatey(x::Float64, l::LineSegment)
-    x1 = l.p1[1]
-    x2 = l.p2[1]
+function evaluatey(l::LineSegment, x::Float64)
+    x1, y1 = l.p1
+    x2, y2 = l.p2
 
-    if x1 < x < x2
-        y = l.p1[2] + l.slope*(x-x1)
+    if x1 <= x <= x2
+        y = y1 + l._slope*(x-x1)
     else
         error("x is not on line segment")
     end
@@ -68,12 +68,12 @@ function evaluatey(x::Float64, l::LineSegment)
     return y
 end
 
-function evaluatex(y::Float64, l::LineSegment)
+function evaluatex(l::LineSegment, y::Float64)
     y1 = l.p1[2]
     y2 = l.p2[2]
 
     if y1 < y < y2
-        x = l.p1[1] + (y-y1)/l.slope
+        x = l.p1[1] + (y-y1)/l._slope
     else
         error("y is not on line segment")
     end
@@ -143,3 +143,4 @@ function Quadrant(origin::Point, _end_x, _end_y)
 end
 
 in(x::Point, q::Quadrant) = (q.dir_x(x) && q.dir_y(x)) ? true : false
+

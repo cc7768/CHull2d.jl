@@ -39,7 +39,7 @@ function _akltoussaint{T}(p::Vector{Point{2, T}})
     return out
 end
 
-function _akltoussaint4{T<:Real}(p::Vector{Point{2, T}}, upts::Vector{Point{2, T}}, npts::Int64)
+function _akltoussaint4{T<:Real}(p::Vector{Point{2, T}}, upts::Vector{Point{2, T}}, npts::Int)
 
     # Get the points from upts
     pt1, pt2, pt3, pt4 = upts
@@ -63,7 +63,7 @@ function _akltoussaint4{T<:Real}(p::Vector{Point{2, T}}, upts::Vector{Point{2, T
     return p[out]
 end
 
-function _akltoussaint3{T<:Real}(p::Vector{Point{2, T}}, upts::Vector{Point{2, T}}, npts::Int64)
+function _akltoussaint3{T<:Real}(p::Vector{Point{2, T}}, upts::Vector{Point{2, T}}, npts::Int)
 
     # Get the points from upts
     pt1, pt2, pt3 = upts

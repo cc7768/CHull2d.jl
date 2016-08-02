@@ -13,7 +13,7 @@ Algorithms that should be added are:
 * Chan Algorithm
 * ?
 =#
-module CHull2D
+module CHull2d
 
 # Load dependencies
 using FixedSizeArrays
